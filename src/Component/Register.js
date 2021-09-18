@@ -25,7 +25,7 @@ export default class Register extends Component {
     componentDidMount(){
         console.log(document.cookie)
         this.setState({
-            email:this.getCookie('emailid'),
+        email:this.getCookie('emailid'),
         password:this.getCookie('password')})
     }
     getCookie=(cname)=>{var name = cname + "="; var decodedCookie = decodeURIComponent(document.cookie); var ca = decodedCookie.split(';'); for(var i = 0; i <ca.length; i++) { var c = ca[i]; while (c.charAt(0) === ' ') { c = c.substring(1); } if (c.indexOf(name) === 0) { return c.substring(name.length, c.length); } } return ""; } 
@@ -75,7 +75,7 @@ export default class Register extends Component {
     }
     onLogin= ()=>{
          this.setState({
-            clciked:true
+            clicked:true
         })
         const data={
             email:this.state.email,
@@ -91,6 +91,7 @@ export default class Register extends Component {
           localStorage.setItem("remember",this.state.remember);
           localStorage.setItem("name",res.data.data.name);
           localStorage.setItem("user_id",res.data.data._id);
+          localStorage.setItem("email",res.data.data.email)
          
           window.location.reload();
 
@@ -98,13 +99,14 @@ export default class Register extends Component {
             this.setState({
                 error:true,
                 errorP:true,
-                errorMessageP:"Invalid email or password"
+                errorMessageP:"Invalid email or password",
+                 clicked:false
         });
-        })
+        });
     }
     onregister= ()=>{
         this.setState({
-            clciked:true
+            clicked:true
         })
         const data={
             name:this.state.name,
@@ -118,18 +120,21 @@ export default class Register extends Component {
         }).then(res =>{
           console.log(res.data.status)
           if(res.data.status) {
-             this.setState({open:true});
+             this.setState({
+                 open:true,
+                 email:this.getCookie('emailid'),
+                 password:this.getCookie('password'),
+                 clicked:false
+                });
+                this.openlogin();
           }
-          setTimeout(() => {
-                 window.location.reload();
-            }, 2000 );
-         
         }).catch(err=>{
             this.setState({
                 errorP:true,
                 error:true,
                 errorN:true,
-                errorMessageP:"Something went Wrong"
+                errorMessageP:"Something went Wrong",
+                clicked:false     
         });
     });
     }
@@ -151,10 +156,10 @@ export default class Register extends Component {
     render() {
         return (
             <div>
-                <Snackbar open={this.state.open} autoHideDuration={6000} onClose={this.handleClose}>
-                <Alert onClose={this.handleClose} severity="success">
-                Hurry ! you regsitered successfully!
-                </Alert>
+            <Snackbar open={this.state.open} autoHideDuration={6000} onClose={this.handleClose}>
+            <Alert onClose={this.handleClose} severity="success">
+            Hurry ! you regsitered successfully!
+            </Alert>
             </Snackbar>
             <Container maxWidth="xl">
                  <Grid container >
@@ -199,9 +204,9 @@ export default class Register extends Component {
                                 placeholder="Password"
                             />
                             <Button onClick={this.onLogin}
-                            disabled= {this.state.clciked?true:false}
+                            disabled= {this.state.clicked?true:false}
                             style={{width:"100%",margin:"10px auto",background:"#329C89",fontWeight:"bold"}} variant="contained" color="primary">
-                               Login
+                              {!this.state.clicked? "Login" : "Connecting..."}
                             </Button>
                             <div>
                              <Checkbox style={{color:"#329C89"}} onChange={e=>this.rememberme(e.target.checked)} value={this.state.remember}/>   Remember Me
@@ -250,12 +255,12 @@ export default class Register extends Component {
                                 placeholder="Password"
                             />
                             <Button
-                            disabled= {this.state.clciked?true:false}
+                            disabled= {this.state.clicked?true:false}
                             style={{width:"100%",margin:"10px auto",background:"#329C89",fontWeight:"bold"}} variant="contained" color="primary" onClick={this.onregister}>
-                               Sign up
+                                {!this.state.clicked? "Sign up" : "Connecting..."}
                             </Button>
                             <div>
-                             <Checkbox style={{color:"#329C89"}}/>   Remember Me
+                             <Checkbox style={{color:"#329C89"}} onChange={e=>this.rememberme(e.target.checked)} value={this.state.remember}/>   Remember Me
                             </div>
                             </div>
                       }</div>

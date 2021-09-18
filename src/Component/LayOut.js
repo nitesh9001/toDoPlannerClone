@@ -1,9 +1,11 @@
-import Navbar from '../Assets/Navbar';
+import Navbar from '../Commons/Navbar';
 import SideBar from '../Commons/SideBar';
 import React, { Component } from 'react'
 import { Container, Grid } from '@material-ui/core';
 
 export default class LayOut extends Component {
+
+    
     render() {
         return (
             <div className="layout_outter_layer">

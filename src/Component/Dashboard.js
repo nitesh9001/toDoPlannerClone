@@ -10,6 +10,7 @@ import axios from 'axios';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 import SendIcon from '@material-ui/icons/Send';
+import { v4 as uuidv4 } from 'uuid';
 
 function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -25,13 +26,12 @@ export default class Dashboard extends Component {
         dataTodo:[]
     }
     componentWillMount(){
-       this.fetchTodo();
+       setInterval(() => {
+           this.fetchTodo();
+       }, 2000); 
     }
+    
     fetchTodo=()=>{
-        this.setState({
-            title:"",
-            description:""
-        })
           axios.get('https://todobackendass.herokuapp.com/todo/get',{
             headers:{
                 "Content-Type":"application/json"
@@ -50,9 +50,9 @@ export default class Dashboard extends Component {
            console.log(res.data.data,"todo:",dataTodo)
            this.setState({
                allData:res.data.data,
-               dataTodo:dataTodo,
-               dataProgress:dataProgress,
-               dataComplete:dataComplete
+               dataTodo:dataTodo.reverse(),
+               dataProgress:dataProgress.reverse(),
+               dataComplete:dataComplete.reverse()
            })
           }
         }).catch(err=>{
@@ -120,6 +120,49 @@ export default class Dashboard extends Component {
         user_id: localStorage.getItem("user_id"),
         status: this.state.status 
         }
+        if(this.state.status === "todo"){
+            this.setState({
+            dataTodo: [{
+            title:this.state.title,
+            discription:this.state.description,
+            user: {
+            _id:localStorage.getItem("user_id"),
+            name:localStorage.getItem("name"),
+            email:localStorage.getItem("email"),
+        },
+        status: this.state.status 
+            },...this.state.dataTodo]
+        })
+        }
+        if(this.state.status === "progress"){
+            this.setState({
+            dataProgress: [{
+            title:this.state.title,
+            discription:this.state.description,
+            user: {
+            _id:localStorage.getItem("user_id"),
+            name:localStorage.getItem("name"),
+            email:localStorage.getItem("email"),
+        },
+        status: this.state.status 
+            },...this.state.dataProgress]
+        })
+        }
+        if(this.state.status === "complete"){
+            this.setState({
+            dataComplete: [{
+            title:this.state.title,
+            discription:this.state.description,
+            user: {
+            _id:localStorage.getItem("user_id"),
+            name:localStorage.getItem("name"),
+            email:localStorage.getItem("email"),
+        },
+        status: this.state.status 
+            },...this.state.dataComplete]
+        })
+        }
+        
         axios.post('https://todobackendass.herokuapp.com/todo/upload',data,{
             headers:{
                 "Content-Type":"application/json"
@@ -127,18 +170,22 @@ export default class Dashboard extends Component {
         }).then(res =>{
             if(res.data.status) {
              this.setState({open:true,
-                 delmessage:"Hurry ! you added successfully",
-
+            delmessage:"Hurry ! you added successfully",
             opentodo:false,
-        openProgress:false,
-        openComplete:false}); 
-        this.fetchTodo(); 
+            openProgress:false,
+            openComplete:false,
+            title:"",
+            description:""
+           });
+            this.fetchTodo(); 
+
         }
         }).catch(err=>{
-            alert("Something went wrong",err)
+            this.fetchTodo(); 
+             this.setState({delmessage:"Something went wrong"})
         })
     }
-     deleteTodo=(id)=>{
+    deleteTodo=(id)=>{
         this.setState({
             drawer:false,
         })
@@ -183,7 +230,6 @@ export default class Dashboard extends Component {
             drawer:false}); 
             this.fetchTodo(); 
             }
-             window.location.reload();
             }).catch(err=>{
                 alert("Something went wrong",err)
             })
@@ -202,8 +248,7 @@ export default class Dashboard extends Component {
       this.setState({open:false});
     };
     onDragOver = (ev) => {
-        ev.preventDefault();
-        
+        ev.preventDefault(); 
     }
     onDragStart = (ev, id,val) => {
         console.log('dragstart:',id);
@@ -251,10 +296,11 @@ export default class Dashboard extends Component {
              window.location.reload();
             }).catch(err=>{
                 alert("Something went wrong",err)
-            })
+        })
     }
     
     render() {
+        console.log(this.state.dataTodo)
        
         const {dataTodo,dataProgress,dataComplete,delmessage} = this.state
         return (
@@ -311,12 +357,9 @@ export default class Dashboard extends Component {
                         }
                         {dataTodo?.map((data) =>
                             <div className="card_form_section" draggable onDragStart = {(e) => this.onDragStart(e, data._id,"dataTodo")}>
-                                 <div  onClick={(e)=>this.openData(data._id)}>
-                                     <InputBase
-                                    disabled
-                                    defaultValue={data?.title}
-                                    style={{color:"black",padding:"5px",fontWeight:"bold"}}    
-                                />
+                                 <div onClick={(e)=>this.openData(data._id)}>
+                                     <p style={{color:"black",padding:"5px",fontWeight:"bold",textTransform:"capitalize"}}    
+                                >{data?.title}</p>
                                  <p style={{color:"grey",padding:"5px"}}>
                                  {data.discription?.substr(0, 100)}...</p> 
                                 </div>
@@ -364,11 +407,8 @@ export default class Dashboard extends Component {
                             {dataProgress?.map((data) =>
                             <div className="card_form_section" draggable onDragStart = {(e) => this.onDragStart(e, data._id,"dataProgress")}>
                                  <div onClick={(e)=>this.openData(data._id)}>
-                                     <InputBase
-                                    disabled
-                                    defaultValue={data?.title}
-                                    style={{color:"black",padding:"5px",fontWeight:"bold"}}    
-                                />
+                                     <p style={{color:"black",padding:"5px",fontWeight:"bold",textTransform:"capitalize"}}    
+                                >{data?.title}</p>
                                  <p style={{color:"grey",padding:"5px"}}>
                                  {data.discription?.substr(0, 100)}...</p> 
                                  </div>
@@ -417,11 +457,8 @@ export default class Dashboard extends Component {
                        {dataComplete?.map((data) =>
                             <div className="card_form_section" draggable onDragStart = {(e) => this.onDragStart(e, data._id,"dataComplete",)}>
                                  <div onClick={(e)=>this.openData(data._id)}>
-                                     <InputBase
-                                    disabled
-                                    defaultValue={data?.title}
-                                    style={{color:"black",padding:"5px",fontWeight:"bold"}}    
-                                />
+                                   <p style={{color:"black",padding:"5px",fontWeight:"bold",textTransform:"capitalize"}}    
+                                >{data?.title}</p>
                                  <p style={{color:"grey",padding:"5px"}}>
                                  {data.discription?.substr(0, 100)}...</p> 
                                  </div> 
